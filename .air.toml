@@ -1,0 +1,13 @@
+# .air.toml
+
+[build]
+  cmd = " go build -o ./bin/main main.go" # Command to build the app
+
+  
+  bin = "./bin/main"   # Binary output file
+  include_ext=["go"]   # patterns to watch
+  run_after_build="chmod +x ./bin/main"
+
+
+[log]
+  level = "info"    # Log level: debug, info, warning, error, fatal

@@ -1,0 +1,9 @@
+bin/
+tmp/
+
+.vscode/
+
+docker-compose.yaml
+
+
+.env
