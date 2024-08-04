@@ -1,23 +1,41 @@
 package api
 
 import (
+	"dhanushs3366/my-portfolio/models"
 	"encoding/json"
 	"log"
+	"time"
 
 	"github.com/labstack/echo/v4"
 )
 
-type LoggedActivity struct {
-	Key          int `json:"all_keys"`
-	MiddleClicks int `json:"middle_clicks"`
-	RightClicks  int `json:"right_clicks"`
-	LeftClicks   int `json:"left_clicks"`
-	ExtraClicks  int `json:"extra_clicks"`
-}
-
 func postLogDetails(c echo.Context) error {
-	var loggedActivity LoggedActivity
+	var loggedActivity models.LoggedActivity
 	err := json.NewDecoder(c.Request().Body).Decode(&loggedActivity)
+	if err != nil {
+		return err
+	}
 	log.Print(loggedActivity)
-	return err
+
+	lastID, lastCreatedAt, err := models.GetRecentLogActivityCreatedAt()
+	if err != nil {
+		return err
+	}
+
+	// -1 id means no rows in the table
+	if lastCreatedAt.Compare(time.Now()) > int(time.Hour) || lastID == -1 {
+		log.Printf("last updated row was 1 hr ago creating a new row")
+		err := models.InsertLogActivity(&loggedActivity)
+		if err != nil {
+			return err
+		}
+	}
+
+	// update the latest record in the table
+	err = models.UpdateLogActivityById(lastID, loggedActivity)
+	if err != nil {
+		return err
+	}
+	log.Printf("Updated ID:%d record", lastID)
+	return nil
 }

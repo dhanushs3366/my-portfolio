@@ -34,15 +34,20 @@ func connectToDB() error {
 	log.Println("Connected to DB successfully")
 	return nil
 }
+
+func syncDB() error {
+	err := createLogActivityTable()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func Init() error {
 	err := connectToDB()
-	// add a func call to sync database
 	if err != nil {
 		return err
 	}
-	err = createTempTable()
-	if err != nil {
-		return err
-	}
-	return nil
+	return syncDB()
 }
