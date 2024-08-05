@@ -1,6 +1,7 @@
 package api
 
 import (
+	"dhanushs3366/my-portfolio/api/handlers"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -35,7 +36,7 @@ func Init() *Handler {
 		return c.JSON(http.StatusOK, "HIIII")
 	})
 
-	h.router.POST("/log-details", postLogDetails)
+	h.router.POST("/log-details", handlers.PostLogDetails)
 
 	return &h
 }
