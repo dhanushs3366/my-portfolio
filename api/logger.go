@@ -23,19 +23,20 @@ func postLogDetails(c echo.Context) error {
 	}
 
 	// -1 id means no rows in the table
-	if lastCreatedAt.Compare(time.Now()) > int(time.Hour) || lastID == -1 {
-		log.Printf("last updated row was 1 hr ago creating a new row")
+	if lastID == -1 || time.Since(*lastCreatedAt) > time.Hour {
+		log.Printf("last updated row was 1 hr ago or no rows exist, creating a new row")
 		err := models.InsertLogActivity(&loggedActivity)
 		if err != nil {
 			return err
 		}
+	} else {
+		// update the latest record in the table
+		err = models.UpdateLogActivityById(lastID, loggedActivity)
+		if err != nil {
+			return err
+		}
+		log.Printf("Updated ID:%d record", lastID)
 	}
 
-	// update the latest record in the table
-	err = models.UpdateLogActivityById(lastID, loggedActivity)
-	if err != nil {
-		return err
-	}
-	log.Printf("Updated ID:%d record", lastID)
 	return nil
 }
