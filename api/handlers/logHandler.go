@@ -24,7 +24,7 @@ func PostLogDetails(c echo.Context) error {
 	}
 
 	// -1 id means no rows in the table
-	if lastID == -1 || time.Since(*lastCreatedAt) > time.Hour {
+	if lastID == -1 || time.Since(*lastCreatedAt) > time.Minute {
 		log.Printf("last updated row was 1 hr ago or no rows exist, creating a new row")
 		err := services.InsertLogActivity(&loggedActivity)
 		if err != nil {
