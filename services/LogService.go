@@ -117,7 +117,7 @@ func UpdateLogActivityById(ID int, updatedActivity models.LoggedActivity) error 
 		WHERE ID=$7
 	`
 
-	_, err = DB.Exec(query, updatedActivity.Key, updatedActivity.LeftClicks, updatedActivity.RightClicks, updatedActivity.MiddleClicks, updatedActivity.MiddleClicks, time.Now(), ID)
+	_, err = DB.Exec(query, updatedActivity.Key, updatedActivity.LeftClicks, updatedActivity.RightClicks, updatedActivity.MiddleClicks, updatedActivity.ExtraClicks, time.Now(), ID)
 	if err != nil {
 		return err
 	}

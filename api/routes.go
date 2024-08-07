@@ -14,14 +14,6 @@ type Handler struct {
 	// have jwt and config future
 }
 
-type Logger struct {
-	Key          int `json:"all_keys"`
-	MiddleClicks int `json:"middle_clicks"`
-	RightClicks  int `json:"right_clicks"`
-	LeftClicks   int `json:"left_clicks"`
-	ExtraClicks  int `json:"extra_clicks"`
-}
-
 type e echo.HandlerFunc
 
 func writeJson(w http.ResponseWriter, status int, v any) error {
@@ -37,6 +29,9 @@ func Init() *Handler {
 	})
 
 	h.router.POST("/log-details", handlers.PostLogDetails)
+
+	h.router.GET("/repos", handlers.GetRepos)
+	h.router.GET("/git-user", handlers.GetGitUser)
 
 	return &h
 }
