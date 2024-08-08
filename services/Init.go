@@ -7,6 +7,7 @@ import (
 	"os"
 )
 
+// create a store struct instead of using it as a global variable
 var DB *sql.DB
 
 func connectToDB() error {
@@ -41,6 +42,10 @@ func syncDB() error {
 		return err
 	}
 
+	err = createUserTable()
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

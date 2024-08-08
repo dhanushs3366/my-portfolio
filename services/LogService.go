@@ -71,8 +71,7 @@ func GetRecentUpdatedActivity() (*models.LoggedActivity, error) {
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			// -1 with no error returned indicates no rows
-			return nil, errors.New("no rows in the table")
+			return nil, err
 		}
 		return nil, err
 	}

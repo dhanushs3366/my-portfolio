@@ -33,6 +33,7 @@ func Init() *Handler {
 	h.router.GET("/repos", handlers.GetRepos)
 	h.router.GET("/git-user", handlers.GetGitUser)
 
+	h.router.POST("/login", handlers.Login)
 	return &h
 }
 
