@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func Login(c echo.Context) error {
@@ -27,8 +28,10 @@ func Login(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	if password != user.Password {
-		return c.JSON(http.StatusUnauthorized, "incorrect username/password")
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, err.Error())
 	}
 
 	if !user.IsAdmin {
@@ -42,7 +45,7 @@ func Login(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 	c.SetCookie(&http.Cookie{
-		Name:     "Bearer",
+		Name:     "auth_token",
 		Value:    token,
 		Path:     "/",
 		HttpOnly: true,
@@ -50,4 +53,25 @@ func Login(c echo.Context) error {
 	})
 
 	return c.JSON(http.StatusOK, "login successful")
+}
+
+func UpdatePassword(c echo.Context) error {
+	username := c.QueryParam("username")
+	password := c.FormValue("password")
+
+	hashedPassword, err := services.HashPassword(password)
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+	err = services.UpdatePassword(username, hashedPassword)
+
+	if err != nil {
+		if errors.Is(err, services.ErrNoEntityFound) {
+			return c.JSON(http.StatusUnauthorized, err.Error())
+		}
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	return c.JSON(http.StatusOK, "updated password sucessfully")
 }

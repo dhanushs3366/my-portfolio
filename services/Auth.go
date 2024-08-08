@@ -3,10 +3,12 @@ package services
 import (
 	"dhanushs3366/my-portfolio/models"
 	"errors"
+	"net/http"
 	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -58,4 +60,36 @@ func GenerateJWTToken(user *models.User) (string, error) {
 	return tokenStr, nil
 }
 
-func ValidateUser()
+func ValidateJWT(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		jwtSecret := []byte(os.Getenv("JWT_SECRET"))
+		cookie, err := c.Cookie("auth_token")
+		if err != nil {
+			if errors.Is(err, http.ErrNoCookie) {
+				return c.JSON(http.StatusUnauthorized, "no cookie")
+			}
+			return c.JSON(http.StatusBadRequest, err.Error())
+		}
+		tokenStr := cookie.Value
+
+		claims := &UserClaims{}
+
+		token, err := jwt.ParseWithClaims(tokenStr, claims, func(t *jwt.Token) (interface{}, error) {
+			return jwtSecret, nil
+		})
+
+		if err != nil {
+			if errors.Is(err, jwt.ErrSignatureInvalid) {
+				return c.JSON(http.StatusUnauthorized, err.Error())
+			}
+			return c.JSON(http.StatusBadRequest, err.Error())
+		}
+
+		if !token.Valid {
+			return c.JSON(http.StatusUnauthorized, "user unauthorized")
+		}
+
+		return next(c)
+
+	}
+}

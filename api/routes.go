@@ -2,6 +2,7 @@ package api
 
 import (
 	"dhanushs3366/my-portfolio/api/handlers"
+	"dhanushs3366/my-portfolio/services"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -34,6 +35,14 @@ func Init() *Handler {
 	h.router.GET("/git-user", handlers.GetGitUser)
 
 	h.router.POST("/login", handlers.Login)
+
+	adminRoutes := h.router.Group("/admins")
+	adminRoutes.GET("/hello", func(c echo.Context) error {
+		return c.JSON(http.StatusOK, "hello admin")
+	})
+	adminRoutes.PATCH("/user", handlers.UpdatePassword)
+	adminRoutes.Use(services.ValidateJWT)
+
 	return &h
 }
 
