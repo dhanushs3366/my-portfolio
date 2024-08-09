@@ -1,6 +1,7 @@
 package services
 
 import (
+	"crypto/subtle"
 	"dhanushs3366/my-portfolio/models"
 	"errors"
 	"net/http"
@@ -91,5 +92,22 @@ func ValidateJWT(next echo.HandlerFunc) echo.HandlerFunc {
 
 		return next(c)
 
+	}
+}
+
+func ValidateLoggerToken(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		storedToken := []byte(os.Getenv("LOG_TOKEN"))
+		auth_token := c.Request().Header.Get("auth_token")
+		tokenStr := []byte(auth_token[len("Bearer "):])
+
+		if len(tokenStr) != len(storedToken) {
+			return c.JSON(http.StatusUnauthorized, "Unauthorized access")
+		}
+
+		if subtle.ConstantTimeCompare(storedToken, tokenStr) != 1 {
+			return c.JSON(http.StatusUnauthorized, "Unauthorized access")
+		}
+		return next(c)
 	}
 }

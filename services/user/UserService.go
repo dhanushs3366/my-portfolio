@@ -88,10 +88,10 @@ func (s *UserStore) GetUser(username string) (*models.User, error) {
 
 func (s *UserStore) UpdatePassword(username string, password string) error {
 	query := `
-		UPDATE USERS SET PASSWORD=$1 WHERE USERNAME=$2
+		UPDATE USERS SET PASSWORD=$1, UPDATED_AT=$2 WHERE USERNAME=$3
 	`
 
-	_, err := s.DB.Exec(query, password, username)
+	_, err := s.DB.Exec(query, password, time.Now(), username)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

@@ -29,7 +29,8 @@ func Init(db *sql.DB) *Handler {
 		return c.JSON(http.StatusOK, "HIIII")
 	})
 
-	h.router.POST("/log-details", h.PostLogDetails)
+	logRoutes := h.router.Group("/log")
+	logRoutes.POST("/details", h.PostLogDetails)
 
 	// h.router.GET("/repos", GetRepos)
 	// h.router.GET("/git-user", GetGitUser)
@@ -41,8 +42,9 @@ func Init(db *sql.DB) *Handler {
 		return c.JSON(http.StatusOK, "hello admin")
 	})
 	adminRoutes.PATCH("/user", h.UpdatePassword)
-	adminRoutes.Use(services.ValidateJWT)
 
+	adminRoutes.Use(services.ValidateJWT)
+	logRoutes.Use(services.ValidateLoggerToken)
 	return &h
 }
 
