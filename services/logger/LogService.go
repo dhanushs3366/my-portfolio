@@ -1,4 +1,4 @@
-package services
+package logger
 
 import (
 	"database/sql"
@@ -6,44 +6,48 @@ import (
 	"errors"
 	"log"
 	"time"
-
-	_ "github.com/lib/pq"
 )
 
-// uni placements are happening i need to learn sql so im raw dogging this without any orms
+type LogStore struct {
+	DB *sql.DB
+}
 
-// create a new table entry once in a while like every 1 hour update the latest record for the remaining time
+func NewLogStore(db *sql.DB) *LogStore {
+	return &LogStore{
+		DB: db,
+	}
+}
 
-func createLogActivityTable() error {
-
+func (s *LogStore) CreateLogActivityTable() error {
 	query := `
 		CREATE TABLE IF NOT EXISTS LOG_ACTIVITY(
-			id SERIAL PRIMARY KEY,
-			key INTEGER,
-			middle_clicks INTEGER,
-			right_clicks INTEGER,
-			left_clicks INTEGER,
-			extra_clicks INTEGER,
-			created_at TIMESTAMP NOT NULL,
-			updated_at TIMESTAMP NOT NULL
+			ID SERIAL PRIMARY KEY,
+			KEY INTEGER,
+			MIDDLE_CLICKS INTEGER,
+			RIGHT_CLICKS INTEGER,
+			LEFT_CLICKS INTEGER,
+			EXTRA_CLICKS INTEGER,
+			CREATED_AT TIMESTAMP NOT NULL,
+			UPDATED_AT TIMESTAMP NOT NULL
 		)
 	`
 
-	result, err := DB.Exec(query)
+	_, err := s.DB.Exec(query)
 	if err != nil {
 		return err
 	}
-	log.Printf("Log Activity table created %v\n", result)
+
+	log.Println("Log Activity table created")
 	return nil
 }
 
-func InsertLogActivity(activity *models.LoggedActivity) error {
+func (s *LogStore) InsertLogActivity(activity *models.LoggedActivity) error {
 	query := `
 		INSERT INTO LOG_ACTIVITY (key,middle_clicks,right_clicks,left_clicks,extra_clicks,created_at,updated_at)
 		VALUES ($1,$2,$3,$4,$5,$6,$7)
 	`
 	now := time.Now()
-	result, err := DB.Exec(query, activity.Key, activity.MiddleClicks, activity.RightClicks, activity.LeftClicks, activity.ExtraClicks, now, now)
+	result, err := s.DB.Exec(query, activity.Key, activity.MiddleClicks, activity.RightClicks, activity.LeftClicks, activity.ExtraClicks, now, now)
 	if err != nil {
 		return err
 	}
@@ -56,14 +60,14 @@ func InsertLogActivity(activity *models.LoggedActivity) error {
 	return nil
 }
 
-func GetRecentUpdatedActivity() (*models.LoggedActivity, error) {
+func (s *LogStore) GetRecentUpdatedActivity() (*models.LoggedActivity, error) {
 	query := `
 		SELECT key, middle_clicks, right_clicks,left_clicks,extra_clicks FROM LOG_ACTIVITY
 		ORDER BY created_at DESC
 		LIMIT 1
 	`
 
-	row := DB.QueryRow(query)
+	row := s.DB.QueryRow(query)
 
 	var activity models.LoggedActivity
 
@@ -79,12 +83,12 @@ func GetRecentUpdatedActivity() (*models.LoggedActivity, error) {
 	return &activity, nil
 }
 
-func GetLogActivityById(ID int) (*models.LoggedActivity, error) {
+func (s *LogStore) GetLogActivityById(ID int) (*models.LoggedActivity, error) {
 	query := `
 		select key, middle_clicks,left_clicks,right_clicks,extra_clicks FROM LOG_ACTIVITY
 		WHERE id=$1
 	`
-	row := DB.QueryRow(query, ID)
+	row := s.DB.QueryRow(query, ID)
 	var activity models.LoggedActivity
 	err := row.Scan(&activity.Key, &activity.MiddleClicks, &activity.LeftClicks, &activity.RightClicks, &activity.ExtraClicks)
 
@@ -98,8 +102,8 @@ func GetLogActivityById(ID int) (*models.LoggedActivity, error) {
 	return &activity, nil
 }
 
-func UpdateLogActivityById(ID int, updatedActivity models.LoggedActivity) error {
-	activity, err := GetLogActivityById(ID)
+func (s *LogStore) UpdateLogActivityById(ID int, updatedActivity models.LoggedActivity) error {
+	activity, err := s.GetLogActivityById(ID)
 	if err != nil {
 		return err
 	}
@@ -116,7 +120,7 @@ func UpdateLogActivityById(ID int, updatedActivity models.LoggedActivity) error 
 		WHERE ID=$7
 	`
 
-	_, err = DB.Exec(query, updatedActivity.Key, updatedActivity.LeftClicks, updatedActivity.RightClicks, updatedActivity.MiddleClicks, updatedActivity.ExtraClicks, time.Now(), ID)
+	_, err = s.DB.Exec(query, updatedActivity.Key, updatedActivity.LeftClicks, updatedActivity.RightClicks, updatedActivity.MiddleClicks, updatedActivity.ExtraClicks, time.Now(), ID)
 	if err != nil {
 		return err
 	}
@@ -126,14 +130,14 @@ func UpdateLogActivityById(ID int, updatedActivity models.LoggedActivity) error 
 
 }
 
-func GetRecentLogActivityCreatedAt() (int, *time.Time, error) {
+func (s *LogStore) GetRecentLogActivityCreatedAt() (int, *time.Time, error) {
 	query := `
 		SELECT id, created_at FROM LOG_ACTIVITY
 		ORDER BY created_at DESC
 		LIMIT 1 
 	`
 
-	row := DB.QueryRow(query)
+	row := s.DB.QueryRow(query)
 
 	var id int
 	var createdAt time.Time

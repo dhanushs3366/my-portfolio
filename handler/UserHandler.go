@@ -1,7 +1,8 @@
-package handlers
+package handler
 
 import (
 	"dhanushs3366/my-portfolio/services"
+	"dhanushs3366/my-portfolio/services/db"
 	"errors"
 	"net/http"
 	"time"
@@ -10,7 +11,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func Login(c echo.Context) error {
+func (h *Handler) Login(c echo.Context) error {
 	req := c.Request()
 
 	// dont add bcrypt right away i hardcoded my initial creds without hashing it
@@ -19,17 +20,16 @@ func Login(c echo.Context) error {
 	username := req.FormValue("username")
 	password := req.FormValue("password")
 
-	user, err := services.GetUser(username)
+	user, err := h.userStore.GetUser(username)
 
 	if err != nil {
-		if errors.Is(err, services.ErrNoEntityFound) {
+		if errors.Is(err, db.ErrNoEntityFound) {
 			return c.JSON(http.StatusUnauthorized, "user not found")
 		}
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
-
 	if err != nil {
 		return c.JSON(http.StatusUnauthorized, err.Error())
 	}
@@ -55,7 +55,7 @@ func Login(c echo.Context) error {
 	return c.JSON(http.StatusOK, "login successful")
 }
 
-func UpdatePassword(c echo.Context) error {
+func (h *Handler) UpdatePassword(c echo.Context) error {
 	username := c.QueryParam("username")
 	password := c.FormValue("password")
 
@@ -64,10 +64,10 @@ func UpdatePassword(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
-	err = services.UpdatePassword(username, hashedPassword)
+	err = h.userStore.UpdatePassword(username, hashedPassword)
 
 	if err != nil {
-		if errors.Is(err, services.ErrNoEntityFound) {
+		if errors.Is(err, db.ErrNoEntityFound) {
 			return c.JSON(http.StatusUnauthorized, err.Error())
 		}
 		return c.JSON(http.StatusBadRequest, err.Error())
