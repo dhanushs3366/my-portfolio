@@ -4,6 +4,7 @@ import (
 	"dhanushs3366/my-portfolio/models"
 	"encoding/json"
 	"log"
+	"net/http"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -39,4 +40,27 @@ func (h *Handler) PostLogDetails(c echo.Context) error {
 	}
 
 	return nil
+}
+
+func (h *Handler) GetLogDetails(c echo.Context) error {
+	to := c.QueryParam("to")
+	dateFormat := "02-01-2006"
+
+	if to == "" {
+		return c.JSON(http.StatusNoContent, "query param not found")
+	}
+
+	toDate, err := time.Parse(dateFormat, to)
+
+	if err != nil {
+		return c.JSON(http.StatusConflict, err.Error())
+	}
+
+	logs, err := h.logStore.GetLogActivtyPerWeek(toDate)
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	return c.JSON(http.StatusOK, logs)
 }

@@ -85,12 +85,12 @@ func (s *LogStore) GetRecentUpdatedActivity() (*models.LoggedActivity, error) {
 
 func (s *LogStore) GetLogActivityById(ID int) (*models.LoggedActivity, error) {
 	query := `
-		select key, middle_clicks,left_clicks,right_clicks,extra_clicks FROM LOG_ACTIVITY
+		select key, middle_clicks,left_clicks,right_clicks,extra_clicks, created_at,updated_at FROM LOG_ACTIVITY
 		WHERE id=$1
 	`
 	row := s.DB.QueryRow(query, ID)
 	var activity models.LoggedActivity
-	err := row.Scan(&activity.Key, &activity.MiddleClicks, &activity.LeftClicks, &activity.RightClicks, &activity.ExtraClicks)
+	err := row.Scan(&activity.Key, &activity.MiddleClicks, &activity.LeftClicks, &activity.RightClicks, &activity.ExtraClicks, &activity.CreatedAt, &activity.UpdatedAt)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -138,7 +138,6 @@ func (s *LogStore) GetRecentLogActivityCreatedAt() (int, *time.Time, error) {
 	`
 
 	row := s.DB.QueryRow(query)
-
 	var id int
 	var createdAt time.Time
 	err := row.Scan(&id, &createdAt)
@@ -151,4 +150,44 @@ func (s *LogStore) GetRecentLogActivityCreatedAt() (int, *time.Time, error) {
 	}
 
 	return id, &createdAt, nil
+}
+
+func (s *LogStore) GetLogActivtyPerWeek(toDate time.Time) ([]models.LoggedActivity, error) {
+	var logs []models.LoggedActivity
+	query := `
+		SELECT * FROM LOG_ACTIVITY 
+		WHERE UPDATED_AT >=$1 AND UPDATED_AT <=$2
+	`
+	fromWeek := toDate.Add(-7 * 24 * time.Hour)
+	rows, err := s.DB.Query(query, fromWeek, toDate)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		var log models.LoggedActivity
+		err := rows.Scan(
+			&log.ID,
+			&log.Key,
+			&log.MiddleClicks,
+			&log.RightClicks,
+			&log.LeftClicks,
+			&log.ExtraClicks,
+			&log.CreatedAt,
+			&log.UpdatedAt,
+		)
+
+		if err != nil {
+			continue
+		}
+		logs = append(logs, log)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+
+	}
+
+	return logs, nil
 }

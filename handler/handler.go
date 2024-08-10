@@ -28,9 +28,10 @@ func Init(db *sql.DB) *Handler {
 	h.router.GET("/hello", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, "HIIII")
 	})
+	h.router.GET("/log-details", h.GetLogDetails)
 
-	logRoutes := h.router.Group("/log")
-	logRoutes.POST("/details", h.PostLogDetails)
+	apiRoutes := h.router.Group("/api")
+	apiRoutes.POST("/log-details", h.PostLogDetails)
 
 	// h.router.GET("/repos", GetRepos)
 	// h.router.GET("/git-user", GetGitUser)
@@ -44,7 +45,7 @@ func Init(db *sql.DB) *Handler {
 	adminRoutes.PATCH("/user", h.UpdatePassword)
 
 	adminRoutes.Use(services.ValidateJWT)
-	logRoutes.Use(services.ValidateLoggerToken)
+	apiRoutes.Use(services.ValidateLoggerToken)
 	return &h
 }
 
