@@ -9,6 +9,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 type Handler struct {
@@ -24,6 +25,9 @@ func Init(db *sql.DB) *Handler {
 		userStore: user.NewUserStore(db),
 		logStore:  logger.NewLogStore(db),
 	}
+	h.router.Use(middleware.Logger())
+	h.router.Use(middleware.Recover())
+	h.router.Use(middleware.CORS())
 
 	h.router.GET("/hello", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, "HIIII")
