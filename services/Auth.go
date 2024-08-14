@@ -15,7 +15,7 @@ import (
 
 const (
 	HASHING_ROUNDS = 14
-	EXPIRY_TIME    = 25 // in hrs
+	EXPIRY_TIME    = 24 // in hrs
 )
 
 type UserClaims struct {
@@ -58,6 +58,7 @@ func GenerateJWTToken(user *models.User) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	// tokenStr = fmt.Sprintf("Bearer %s", tokenStr)
 	return tokenStr, nil
 }
 
@@ -67,7 +68,7 @@ func ValidateJWT(next echo.HandlerFunc) echo.HandlerFunc {
 		cookie, err := c.Cookie("auth_token")
 		if err != nil {
 			if errors.Is(err, http.ErrNoCookie) {
-				return c.JSON(http.StatusUnauthorized, "no cookie")
+				return c.JSON(http.StatusUnauthorized, err.Error())
 			}
 			return c.JSON(http.StatusBadRequest, err.Error())
 		}
