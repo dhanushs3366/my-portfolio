@@ -2,6 +2,7 @@ package initializers
 
 import (
 	"database/sql"
+	blog "dhanushs3366/my-portfolio/services/blog"
 	"dhanushs3366/my-portfolio/services/db"
 	"dhanushs3366/my-portfolio/services/logger"
 	"dhanushs3366/my-portfolio/services/user"
@@ -16,6 +17,12 @@ func syncDB(db *sql.DB) error {
 	logStore := logger.NewLogStore(db)
 	err = logStore.CreateLogActivityTable()
 
+	if err != nil {
+		return err
+	}
+
+	blogStore := blog.NewBlogStore(db)
+	err = blogStore.CreateBlogTable()
 	if err != nil {
 		return err
 	}

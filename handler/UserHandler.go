@@ -57,16 +57,6 @@ func (h *Handler) Login(c echo.Context) error {
 	return c.JSON(http.StatusOK, "login successful")
 }
 
-func (h *Handler) Logout(c echo.Context) error {
-	cookie := new(http.Cookie)
-	cookie.Name = "auth_token"
-	cookie.Value = ""
-	cookie.Expires = time.Unix(0, 0)
-	c.SetCookie(cookie)
-
-	return c.JSON(http.StatusOK, "logged out")
-}
-
 func (h *Handler) UpdatePassword(c echo.Context) error {
 	username := c.QueryParam("username")
 	password := c.FormValue("password")

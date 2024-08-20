@@ -58,7 +58,6 @@ func GenerateJWTToken(user *models.User) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	// tokenStr = fmt.Sprintf("Bearer %s", tokenStr)
 	return tokenStr, nil
 }
 
@@ -111,4 +110,21 @@ func ValidateLoggerToken(next echo.HandlerFunc) echo.HandlerFunc {
 		}
 		return next(c)
 	}
+}
+
+// get user id from token string by decrypting jwt token
+
+func GetUsernameFromToken(tokenStr string) (string, error) {
+	jwtSecret := []byte(os.Getenv("JWT_SECRET"))
+	claims := &UserClaims{}
+	token, err := jwt.ParseWithClaims(tokenStr, claims, func(t *jwt.Token) (interface{}, error) {
+		return jwtSecret, nil
+	})
+	if err != nil {
+		return "", err
+	}
+	if !token.Valid {
+		return "", errors.New("token invalid")
+	}
+	return claims.Username, nil
 }
