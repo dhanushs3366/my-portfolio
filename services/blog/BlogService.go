@@ -3,6 +3,8 @@ package blog
 import (
 	"database/sql"
 	"dhanushs3366/my-portfolio/models"
+	"dhanushs3366/my-portfolio/services/db"
+	"errors"
 	"log"
 	"time"
 )
@@ -26,7 +28,9 @@ func (s *BlogStore) CreateBlogTable() error {
 			CONTENT TEXT NOT NULL,
 			CREATED_AT TIMESTAMP NOT NULL,
 			UPDATED_AT TIMESTAMP NOT NULL,
-			CONSTRAINT fk_user
+			DELETED BOOLEAN DEFAULT FALSE,
+			DELETED_AT TIMESTAMP DEFAULT NULL,
+			CONSTRAINT fk_blog_user
 				FOREIGN KEY (USER_ID)
 				REFERENCES USERS(ID)
 		)
@@ -53,4 +57,68 @@ func (s *BlogStore) CreateBlog(user *models.User, content string) error {
 	}
 	log.Println("Blog created")
 	return nil
+}
+
+func (s *BlogStore) EditBlog(blogID string, content string) error {
+	query := `
+		UPDATE BLOG
+		SET CONTENT=$1,UPDATED_AT=$2
+		WHERE ID=$3
+		AND DELETED IS NOT TRUE
+	`
+
+	_, err := s.DB.Exec(query, content, time.Now(), blogID)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return db.ErrNoEntityFound
+		}
+		return err
+	}
+	return nil
+}
+
+func (s *BlogStore) DeleteBlog(blogID string) error {
+	query := `
+		UPDATE BLOG 
+		SET DELETED=TRUE,DELETED_AT=$1
+		WHERE ID=$2
+	`
+	_, err := s.DB.Exec(query, time.Now(), blogID)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return db.ErrNoEntityFound
+		}
+		return err
+	}
+	return nil
+}
+
+func (s *BlogStore) GetBlogs() ([]models.Blog, error) {
+	query := `
+		SELECT ID,USER_ID,CONTENT,CREATED_AT,UPDATED_AT FROM BLOG BL
+		WHERE BL.DELETED=FALSE
+	`
+
+	var blogs []models.Blog
+
+	rows, err := s.DB.Query(query)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, db.ErrNoEntityFound
+		}
+		return nil, err
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		var blog models.Blog
+		err = rows.Scan(&blog.ID, &blog.OwnedBy, &blog.Content, &blog.CreatedAt, &blog.UpdatedAt)
+		if err != nil {
+			continue
+		}
+		blogs = append(blogs, blog)
+	}
+	return blogs, nil
 }

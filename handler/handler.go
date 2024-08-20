@@ -42,12 +42,6 @@ func Init(db *sql.DB) *Handler {
 		AllowCredentials: true,
 	}))
 
-	h.router.GET("/debug/cookies", func(c echo.Context) error {
-		cookies := c.Cookies()
-		h.router.Logger.Printf("Cookies: %+v\n", cookies)
-		return c.JSON(http.StatusOK, cookies)
-	})
-
 	adminRoutes := h.router.Group("/admins")
 	apiRoutes := h.router.Group("/api")
 
@@ -58,19 +52,26 @@ func Init(db *sql.DB) *Handler {
 	h.router.GET("/hello", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, "HIIII")
 	})
-	h.router.GET("/log-details", h.GetLogDetails)
-	h.router.POST("/login", h.Login)
+
+	h.router.GET("/log-details", h.getLogDetails)
+	h.router.GET("/blogs", h.getBlogs)
+
+	h.router.POST("/login", h.login)
 
 	// api
-	apiRoutes.POST("/log-details", h.PostLogDetails)
+	apiRoutes.POST("/log-details", h.postLogDetails)
 
 	// admin
 	adminRoutes.GET("/hello", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, "hello admin")
 	})
-	adminRoutes.POST("/blog", h.createBlog)
 
-	adminRoutes.PATCH("/user", h.UpdatePassword)
+	// admins/blogs
+	adminRoutes.POST("/blogs", h.createBlog)
+	adminRoutes.PATCH("/blogs", h.editBlog)
+	adminRoutes.DELETE("/blogs", h.deleteBlog)
+	adminRoutes.PATCH("/user", h.updatePassword)
+
 	return &h
 }
 
