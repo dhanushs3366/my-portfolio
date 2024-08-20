@@ -77,3 +77,16 @@ func (h *Handler) getBlogs(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, blogs)
 }
+
+func (h *Handler) getBlog(c echo.Context) error {
+	ID := c.Param("ID")
+	blog, err := h.blogStore.GetBlogByID(ID)
+	if err != nil {
+		if errors.Is(err, db.ErrNoEntityFound) {
+			return c.JSON(http.StatusNoContent, err)
+		}
+		return c.JSON(http.StatusInternalServerError, err)
+	}
+
+	return c.JSON(http.StatusOK, blog)
+}

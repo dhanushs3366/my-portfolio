@@ -122,3 +122,22 @@ func (s *BlogStore) GetBlogs() ([]models.Blog, error) {
 	}
 	return blogs, nil
 }
+
+func (s *BlogStore) GetBlogByID(ID string) (*models.Blog, error) {
+	query := `
+		SELECT ID,USER_ID,CONTENT,CREATED_AT,UPDATED_AT FROM BLOG BL
+		WHERE BL.DELETED=FALSE AND BL.ID=$1
+	`
+	row := s.DB.QueryRow(query, ID)
+	var blog models.Blog
+	err := row.Scan(&blog.ID, &blog.OwnedBy, &blog.Content, &blog.CreatedAt, &blog.UpdatedAt)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, db.ErrNoEntityFound
+		}
+		return nil, err
+	}
+
+	return &blog, nil
+}

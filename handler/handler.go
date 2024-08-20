@@ -55,6 +55,7 @@ func Init(db *sql.DB) *Handler {
 
 	h.router.GET("/log-details", h.getLogDetails)
 	h.router.GET("/blogs", h.getBlogs)
+	h.router.GET("/blogs/:ID", h.getBlog)
 
 	h.router.POST("/login", h.login)
 
