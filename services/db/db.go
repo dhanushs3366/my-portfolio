@@ -11,6 +11,7 @@ import (
 )
 
 var ErrNoEntityFound = errors.New("no entity found in the DB")
+var ErrEntityDeleted = errors.New("entity is deleted")
 var db *sql.DB
 
 func ConnectToDB() (*sql.DB, error) {

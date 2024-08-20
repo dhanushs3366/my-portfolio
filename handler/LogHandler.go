@@ -10,7 +10,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func (h *Handler) PostLogDetails(c echo.Context) error {
+func (h *Handler) postLogDetails(c echo.Context) error {
 	var loggedActivity models.LoggedActivity
 	err := json.NewDecoder(c.Request().Body).Decode(&loggedActivity)
 	if err != nil {
@@ -42,9 +42,10 @@ func (h *Handler) PostLogDetails(c echo.Context) error {
 	return nil
 }
 
-func (h *Handler) GetLogDetails(c echo.Context) error {
+func (h *Handler) getLogDetails(c echo.Context) error {
 	to := c.QueryParam("to")
-	dateFormat := "02-01-2006"
+	// this thing sucks change the FE date forwarding to match go's layout
+	dateFormat := "Mon Jan 02 2006 15:04:05 GMT-0700 (India Standard Time)"
 
 	if to == "" {
 		return c.JSON(http.StatusNoContent, "query param not found")
@@ -55,7 +56,6 @@ func (h *Handler) GetLogDetails(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusConflict, err.Error())
 	}
-
 	logs, err := h.logStore.GetLogActivtyPerWeek(toDate)
 
 	if err != nil {
