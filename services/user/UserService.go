@@ -3,7 +3,6 @@ package user
 import (
 	"database/sql"
 	"dhanushs3366/my-portfolio/models"
-	"dhanushs3366/my-portfolio/services"
 	"errors"
 	"log"
 	"time"
@@ -46,18 +45,14 @@ func (s *UserStore) CreateUserTable() error {
 	return nil
 }
 
-func (s *UserStore) InsertUser(user *models.User) error {
+func (s *UserStore) InsertUser(username string, password string, isAdmin bool) error {
 	query := `
 		INSERT INTO USERS (USERNAME,PASSWORD,IS_ADMIN,CREATED_AT,UPDATED_AT)
 		VALUES ($1,$2,$3,$4,$5)
 	`
 
-	hasedPassword, err := services.HashPassword(user.Password)
-	if err != nil {
-		return err
-	}
 	now := time.Now()
-	_, err = s.DB.Exec(query, user.Username, hasedPassword, user.IsAdmin, now, now)
+	_, err := s.DB.Exec(query, username, password, isAdmin, now, now)
 
 	if err != nil {
 		return err

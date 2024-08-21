@@ -71,6 +71,9 @@ func Init(db *sql.DB) *Handler {
 	adminRoutes.POST("/blogs", h.createBlog)
 	adminRoutes.PATCH("/blogs", h.editBlog)
 	adminRoutes.DELETE("/blogs", h.deleteBlog)
+
+	// admin user
+	adminRoutes.POST("/user", h.createAdmin)
 	adminRoutes.PATCH("/user", h.updatePassword)
 
 	return &h

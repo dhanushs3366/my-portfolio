@@ -77,3 +77,21 @@ func (h *Handler) updatePassword(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, "updated password sucessfully")
 }
+
+func (h *Handler) createAdmin(c echo.Context) error {
+	username := c.FormValue("username")
+	password := c.FormValue("password")
+
+	// hash pswrd
+	password, err := services.HashPassword(password)
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err)
+	}
+
+	err = h.userStore.InsertUser(username, password, true)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err)
+	}
+	return c.JSON(http.StatusOK, "admin created")
+}
