@@ -130,6 +130,8 @@ func (s *LogStore) UpdateLogActivityById(ID int, updatedActivity models.LoggedAc
 
 }
 
+
+
 func (s *LogStore) GetRecentLogActivityCreatedAt() (int, *time.Time, error) {
 	query := `
 		SELECT id, created_at FROM LOG_ACTIVITY

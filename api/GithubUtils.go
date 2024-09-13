@@ -1,4 +1,4 @@
-package github
+package api
 
 import (
 	"encoding/json"
@@ -8,6 +8,9 @@ import (
 	"net/http"
 	"os"
 )
+
+type GithubApi struct {
+}
 
 type GithubRepo struct {
 	ID          uint   `json:"id"`

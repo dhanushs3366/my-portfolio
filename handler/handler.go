@@ -2,6 +2,7 @@ package handler
 
 import (
 	"database/sql"
+	"dhanushs3366/my-portfolio/cloud"
 	"dhanushs3366/my-portfolio/services"
 	"dhanushs3366/my-portfolio/services/blog"
 	"dhanushs3366/my-portfolio/services/logger"
@@ -19,7 +20,7 @@ type Handler struct {
 	userStore *user.UserStore
 	logStore  *logger.LogStore
 	blogStore *blog.BlogStore
-	// have jwt and config future
+	aws       *cloud.AwsClient
 }
 
 func Init(db *sql.DB) *Handler {
@@ -30,6 +31,7 @@ func Init(db *sql.DB) *Handler {
 		userStore: user.NewUserStore(db),
 		logStore:  logger.NewLogStore(db),
 		blogStore: blog.NewBlogStore(db),
+		aws:       cloud.NewS3Client(),
 	}
 	h.router.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
 		Format: `{"time":"${time_rfc3339}", "method":"${method}", "uri":"${uri}", "status":${status}, "latency":"${latency_human}", "bytes_in":${bytes_in}, "bytes_out":${bytes_out}}` + "\n",
@@ -54,21 +56,23 @@ func Init(db *sql.DB) *Handler {
 	})
 
 	h.router.GET("/log-details", h.getLogDetails)
+
 	h.router.GET("/blogs", h.getBlogs)
 	h.router.GET("/blogs/:ID", h.getBlog)
-
-	h.router.POST("/login", h.login)
+	h.router.GET("/repos", h.getRepos)
 
 	// api
 	apiRoutes.POST("/log-details", h.postLogDetails)
 
 	// admin
+	h.router.POST("/login", h.login)
 	adminRoutes.GET("/hello", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, "hello admin")
 	})
 
 	// admins/blogs
 	adminRoutes.POST("/blogs", h.createBlog)
+	adminRoutes.POST("/blogs/debug", h.debugS3Upload)
 	adminRoutes.PATCH("/blogs", h.editBlog)
 	adminRoutes.DELETE("/blogs", h.deleteBlog)
 

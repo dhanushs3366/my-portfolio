@@ -3,8 +3,12 @@ package handler
 import (
 	"dhanushs3366/my-portfolio/services"
 	"dhanushs3366/my-portfolio/services/db"
+	"dhanushs3366/my-portfolio/utils"
 	"errors"
+	"log"
+	"mime/multipart"
 	"net/http"
+	"sync"
 
 	"github.com/labstack/echo/v4"
 )
@@ -89,4 +93,59 @@ func (h *Handler) getBlog(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, blog)
+}
+
+func (h *Handler) debugS3Upload(c echo.Context) error {
+	form, err := c.MultipartForm()
+
+	if err != nil {
+		return c.JSON(http.StatusNoContent, errors.New("no file upload"))
+	}
+
+	images := form.File["files"]
+	// implement concurrent model mayhaps?
+	var wg sync.WaitGroup
+	wg.Add(len(images))
+	errs := make(chan error, len(images))
+	for _, image := range images {
+		src, err := image.Open()
+
+		if err != nil {
+			log.Printf("Error %+v", err)
+		}
+
+		s3Key, err := utils.GenerateKeyForS3(image.Filename)
+
+		if err != nil {
+
+			log.Printf("Error %+v", err)
+		}
+
+		go func(file multipart.File, s3Key string, wg *sync.WaitGroup) {
+			defer file.Close()
+			defer wg.Done()
+			err := h.aws.S3Upload(file, s3Key)
+			if err != nil {
+				log.Printf("Errors %+v", err)
+				errs <- err
+			} else {
+				errs <- nil
+			}
+
+		}(src, s3Key, &wg)
+	}
+
+	wg.Wait()
+	close(errs)
+
+	var uploadErrors []error
+	for err := range errs {
+		if err != nil {
+			uploadErrors = append(uploadErrors, err)
+		}
+	}
+	if len(uploadErrors) > 0 {
+		return c.JSON(http.StatusInternalServerError, uploadErrors)
+	}
+	return c.JSON(http.StatusOK, "All images uploaded successfully")
 }

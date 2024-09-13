@@ -24,7 +24,11 @@ func (h *Handler) postLogDetails(c echo.Context) error {
 	}
 
 	// -1 id means no rows in the table
-	if lastID == -1 || time.Since(*lastCreatedAt) > time.Minute {
+<<<<<<< Updated upstream
+	if lastID == -1 || time.Since(*lastCreatedAt) > time.Minute*5 {
+=======
+	if lastID == -1 || time.Since(*lastCreatedAt) > time.Hour/2 {
+>>>>>>> Stashed changes
 		log.Printf("last updated row was 1 hr ago or no rows exist, creating a new row")
 		err := h.logStore.InsertLogActivity(&loggedActivity)
 		if err != nil {
