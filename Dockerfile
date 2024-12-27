@@ -1,15 +1,16 @@
 # Dockerfile
 
-FROM golang:1.22-alpine
+FROM golang:1.23
 
-RUN apk update && apk add --no-cache git
 
 WORKDIR /app/
 
-COPY . .
+COPY go.* .
 
 RUN go  install github.com/air-verse/air@latest
 RUN go mod download
+
+COPY . .
 
 EXPOSE 8080
 

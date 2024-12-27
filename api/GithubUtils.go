@@ -1,6 +1,7 @@
-package github
+package api
 
 import (
+	"dhanushs3366/my-portfolio/models"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -8,18 +9,6 @@ import (
 	"net/http"
 	"os"
 )
-
-type GithubRepo struct {
-	ID          uint   `json:"id"`
-	Name        string `json:"name"`
-	FullName    string `json:"full_name"`
-	URL         string `json:"html_url"`
-	Description string `json:"description"`
-	CloneURL    string `json:"clone_url"`
-	Language    string `json:"language"`
-	Stars       uint   `json:"stargazers_count"`
-	Watchers    uint   `json:"watchers_count"`
-}
 
 type GithubUser struct {
 	Login     string `json:"login"`
@@ -30,7 +19,7 @@ type GithubUser struct {
 	Bio       string `json:"bio"`
 }
 
-func FetchReposByUserName(username string) ([]GithubRepo, error) {
+func FetchReposByUserName(username string) ([]models.GithubRepo, error) {
 	URL, ok := os.LookupEnv("GITHUB_URL")
 	if !ok {
 		return nil, errors.New("env variable not found")
@@ -43,7 +32,7 @@ func FetchReposByUserName(username string) ([]GithubRepo, error) {
 
 	defer resp.Body.Close()
 
-	var repos []GithubRepo
+	var repos []models.GithubRepo
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {

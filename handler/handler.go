@@ -56,6 +56,7 @@ func Init(db *sql.DB) *Handler {
 	h.router.GET("/log-details", h.getLogDetails)
 	h.router.GET("/blogs", h.getBlogs)
 	h.router.GET("/blogs/:ID", h.getBlog)
+	h.router.GET("/repos", h.fetchGitRepos)
 
 	h.router.POST("/login", h.login)
 
@@ -68,9 +69,9 @@ func Init(db *sql.DB) *Handler {
 	})
 
 	// admins/blogs
-	adminRoutes.POST("/blogs", h.createBlog)
-	adminRoutes.PATCH("/blogs", h.editBlog)
-	adminRoutes.DELETE("/blogs", h.deleteBlog)
+	adminRoutes.POST("/blog", h.createBlog)
+	adminRoutes.PATCH("/blog/:id", h.editBlog)
+	adminRoutes.DELETE("/blog/:id", h.deleteBlog)
 
 	// admin user
 	adminRoutes.POST("/user", h.createAdmin)

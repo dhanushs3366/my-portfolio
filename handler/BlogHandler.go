@@ -12,6 +12,7 @@ import (
 func (h *Handler) createBlog(c echo.Context) error {
 	cookie, err := c.Cookie("auth_token")
 	content := c.FormValue("content")
+	title := c.FormValue("title")
 	if err != nil {
 		return c.JSON(http.StatusNoContent, http.ErrNoCookie)
 	}
@@ -27,7 +28,7 @@ func (h *Handler) createBlog(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, err)
 	}
 
-	err = h.blogStore.CreateBlog(user, content)
+	err = h.blogStore.CreateBlog(user, content, title)
 
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err)
@@ -39,8 +40,8 @@ func (h *Handler) createBlog(c echo.Context) error {
 func (h *Handler) editBlog(c echo.Context) error {
 	blogID := c.QueryParam("ID")
 	content := c.FormValue("content")
-
-	err := h.blogStore.EditBlog(blogID, content)
+	title := c.FormValue("title")
+	err := h.blogStore.EditBlog(blogID, content, title)
 	if err != nil {
 		if errors.Is(err, db.ErrNoEntityFound) {
 			return c.JSON(http.StatusInternalServerError, err)

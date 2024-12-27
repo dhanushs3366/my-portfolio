@@ -34,6 +34,10 @@ func (h *Handler) login(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, err.Error())
 	}
 
+	// if user.Password != password {
+	// 	return c.JSON(http.StatusUnauthorized, "unauthorised user")
+	// }
+
 	if !user.IsAdmin {
 		return c.JSON(http.StatusUnauthorized, "unauthorised user")
 	}
