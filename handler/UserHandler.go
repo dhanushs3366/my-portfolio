@@ -20,7 +20,7 @@ func (h *Handler) login(c echo.Context) error {
 	username := req.FormValue("username")
 	password := req.FormValue("password")
 
-	user, err := h.userStore.GetUser(username)
+	user, err := h.store.GetUser(username)
 
 	if err != nil {
 		if errors.Is(err, db.ErrNoEntityFound) {
@@ -70,7 +70,7 @@ func (h *Handler) updatePassword(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
-	err = h.userStore.UpdatePassword(username, hashedPassword)
+	err = h.store.UpdatePassword(username, hashedPassword)
 
 	if err != nil {
 		if errors.Is(err, db.ErrNoEntityFound) {
@@ -93,7 +93,7 @@ func (h *Handler) createAdmin(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, err)
 	}
 
-	err = h.userStore.InsertUser(username, password, true)
+	err = h.store.InsertUser(username, password, true)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err)
 	}

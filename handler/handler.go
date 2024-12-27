@@ -1,11 +1,8 @@
 package handler
 
 import (
-	"database/sql"
 	"dhanushs3366/my-portfolio/services"
-	"dhanushs3366/my-portfolio/services/blog"
-	"dhanushs3366/my-portfolio/services/logger"
-	"dhanushs3366/my-portfolio/services/user"
+	"dhanushs3366/my-portfolio/services/db"
 	"fmt"
 	"net/http"
 	"os"
@@ -15,21 +12,17 @@ import (
 )
 
 type Handler struct {
-	router    *echo.Echo
-	userStore *user.UserStore
-	logStore  *logger.LogStore
-	blogStore *blog.BlogStore
+	router *echo.Echo
+	store  *db.Store
 	// have jwt and config future
 }
 
-func Init(db *sql.DB) *Handler {
+func Init(store *db.Store) *Handler {
 	FE_URL := os.Getenv("FE_URL")
 
 	h := Handler{
-		router:    echo.New(),
-		userStore: user.NewUserStore(db),
-		logStore:  logger.NewLogStore(db),
-		blogStore: blog.NewBlogStore(db),
+		router: echo.New(),
+		store:  store,
 	}
 	h.router.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
 		Format: `{"time":"${time_rfc3339}", "method":"${method}", "uri":"${uri}", "status":${status}, "latency":"${latency_human}", "bytes_in":${bytes_in}, "bytes_out":${bytes_out}}` + "\n",

@@ -1,25 +1,14 @@
-package blog
+package db
 
 import (
 	"database/sql"
 	"dhanushs3366/my-portfolio/models"
-	"dhanushs3366/my-portfolio/services/db"
 	"errors"
 	"log"
 	"time"
 )
 
-type BlogStore struct {
-	DB *sql.DB
-}
-
-func NewBlogStore(db *sql.DB) *BlogStore {
-	return &BlogStore{
-		DB: db,
-	}
-}
-
-func (s *BlogStore) CreateBlogTable() error {
+func (s *Store) CreateBlogTable() error {
 	query := `
 		CREATE TABLE IF NOT EXISTS BLOG(
 			ID INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -46,7 +35,7 @@ func (s *BlogStore) CreateBlogTable() error {
 	return nil
 }
 
-func (s *BlogStore) CreateBlog(user *models.User, content string, title string) error {
+func (s *Store) CreateBlog(user *models.User, content string, title string) error {
 	query := `
 		INSERT INTO BLOG(USER_ID,IMAGES_KEY,CONTENT,CREATED_AT,UPDATED_AT,TITLE)
 		VALUES($1,$2,$3,$4,$5,$6)
@@ -60,7 +49,7 @@ func (s *BlogStore) CreateBlog(user *models.User, content string, title string) 
 	return nil
 }
 
-func (s *BlogStore) EditBlog(blogID string, content string, title string) error {
+func (s *Store) EditBlog(blogID string, content string, title string) error {
 	query := `
 		UPDATE BLOG
 		SET CONTENT=$1,TITLE=$2,UPDATED_AT=$3,
@@ -72,14 +61,15 @@ func (s *BlogStore) EditBlog(blogID string, content string, title string) error 
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return db.ErrNoEntityFound
+			log.Println("No rows found")
+			return err
 		}
 		return err
 	}
 	return nil
 }
 
-func (s *BlogStore) DeleteBlog(blogID string) error {
+func (s *Store) DeleteBlog(blogID string) error {
 	query := `
 		UPDATE BLOG 
 		SET DELETED=TRUE,DELETED_AT=$1
@@ -89,14 +79,15 @@ func (s *BlogStore) DeleteBlog(blogID string) error {
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return db.ErrNoEntityFound
+			log.Println("No rows found")
+			return err
 		}
 		return err
 	}
 	return nil
 }
 
-func (s *BlogStore) GetBlogs() ([]models.Blog, error) {
+func (s *Store) GetBlogs() ([]models.Blog, error) {
 	query := `
 		SELECT ID,USER_ID,TITLE,CONTENT,CREATED_AT,UPDATED_AT FROM BLOG BL
 		WHERE BL.DELETED=FALSE
@@ -107,7 +98,8 @@ func (s *BlogStore) GetBlogs() ([]models.Blog, error) {
 	rows, err := s.DB.Query(query)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, db.ErrNoEntityFound
+			log.Println("No rows found")
+			return nil, err
 		}
 		return nil, err
 	}
@@ -124,7 +116,7 @@ func (s *BlogStore) GetBlogs() ([]models.Blog, error) {
 	return blogs, nil
 }
 
-func (s *BlogStore) GetBlogByID(ID string) (*models.Blog, error) {
+func (s *Store) GetBlogByID(ID string) (*models.Blog, error) {
 	query := `
 		SELECT ID,USER_ID,TITLE,CONTENT,CREATED_AT,UPDATED_AT FROM BLOG BL
 		WHERE BL.DELETED=FALSE AND BL.ID=$1
@@ -135,7 +127,8 @@ func (s *BlogStore) GetBlogByID(ID string) (*models.Blog, error) {
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, db.ErrNoEntityFound
+			log.Println("No rows found")
+			return nil, err
 		}
 		return nil, err
 	}

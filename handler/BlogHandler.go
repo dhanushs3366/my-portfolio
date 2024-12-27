@@ -23,12 +23,12 @@ func (h *Handler) createBlog(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, err)
 	}
 
-	user, err := h.userStore.GetUser(username)
+	user, err := h.store.GetUser(username)
 	if err != nil {
 		return c.JSON(http.StatusUnauthorized, err)
 	}
 
-	err = h.blogStore.CreateBlog(user, content, title)
+	err = h.store.CreateBlog(user, content, title)
 
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err)
@@ -41,7 +41,7 @@ func (h *Handler) editBlog(c echo.Context) error {
 	blogID := c.QueryParam("ID")
 	content := c.FormValue("content")
 	title := c.FormValue("title")
-	err := h.blogStore.EditBlog(blogID, content, title)
+	err := h.store.EditBlog(blogID, content, title)
 	if err != nil {
 		if errors.Is(err, db.ErrNoEntityFound) {
 			return c.JSON(http.StatusInternalServerError, err)
@@ -55,7 +55,7 @@ func (h *Handler) editBlog(c echo.Context) error {
 func (h *Handler) deleteBlog(c echo.Context) error {
 	blogID := c.QueryParam("ID")
 
-	err := h.blogStore.DeleteBlog(blogID)
+	err := h.store.DeleteBlog(blogID)
 
 	if err != nil {
 		if errors.Is(err, db.ErrNoEntityFound) {
@@ -68,7 +68,7 @@ func (h *Handler) deleteBlog(c echo.Context) error {
 }
 
 func (h *Handler) getBlogs(c echo.Context) error {
-	blogs, err := h.blogStore.GetBlogs()
+	blogs, err := h.store.GetBlogs()
 	if err != nil {
 		if errors.Is(err, db.ErrNoEntityFound) {
 			return c.JSON(http.StatusNoContent, err)
@@ -81,7 +81,7 @@ func (h *Handler) getBlogs(c echo.Context) error {
 
 func (h *Handler) getBlog(c echo.Context) error {
 	ID := c.Param("ID")
-	blog, err := h.blogStore.GetBlogByID(ID)
+	blog, err := h.store.GetBlogByID(ID)
 	if err != nil {
 		if errors.Is(err, db.ErrNoEntityFound) {
 			return c.JSON(http.StatusNoContent, err)

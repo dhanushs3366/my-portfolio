@@ -1,4 +1,4 @@
-package user
+package db
 
 import (
 	"database/sql"
@@ -8,23 +8,11 @@ import (
 	"time"
 )
 
-var ErrNoEntityFound = errors.New("no entity found in DB")
-
-type UserStore struct {
-	DB *sql.DB
-}
-
-func NewUserStore(db *sql.DB) *UserStore {
-	return &UserStore{
-		DB: db,
-	}
-}
-
 // uni placements are happening i need to learn sql so im raw dogging this without any orms
 
 // create a new table entry once in a while like every 1 hour update the latest record for the remaining time
 
-func (s *UserStore) CreateUserTable() error {
+func (s *Store) CreateUserTable() error {
 	query := `
 		CREATE TABLE IF NOT EXISTS USERS(
 			ID SERIAL PRIMARY KEY,
@@ -45,7 +33,7 @@ func (s *UserStore) CreateUserTable() error {
 	return nil
 }
 
-func (s *UserStore) InsertUser(username string, password string, isAdmin bool) error {
+func (s *Store) InsertUser(username string, password string, isAdmin bool) error {
 	query := `
 		INSERT INTO USERS (USERNAME,PASSWORD,IS_ADMIN,CREATED_AT,UPDATED_AT)
 		VALUES ($1,$2,$3,$4,$5)
@@ -62,7 +50,7 @@ func (s *UserStore) InsertUser(username string, password string, isAdmin bool) e
 	return nil
 }
 
-func (s *UserStore) GetUser(username string) (*models.User, error) {
+func (s *Store) GetUser(username string) (*models.User, error) {
 	query := `
 		SELECT ID,USERNAME,PASSWORD,IS_ADMIN FROM USERS
 		WHERE USERNAME=$1
@@ -81,7 +69,7 @@ func (s *UserStore) GetUser(username string) (*models.User, error) {
 	return &user, nil
 }
 
-func (s *UserStore) UpdatePassword(username string, password string) error {
+func (s *Store) UpdatePassword(username string, password string) error {
 	query := `
 		UPDATE USERS SET PASSWORD=$1, UPDATED_AT=$2 WHERE USERNAME=$3
 	`

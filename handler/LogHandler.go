@@ -18,7 +18,7 @@ func (h *Handler) postLogDetails(c echo.Context) error {
 	}
 	log.Print(loggedActivity)
 
-	lastID, lastCreatedAt, err := h.logStore.GetRecentLogActivityCreatedAt()
+	lastID, lastCreatedAt, err := h.store.GetRecentLogActivityCreatedAt()
 	if err != nil {
 		return err
 	}
@@ -26,13 +26,13 @@ func (h *Handler) postLogDetails(c echo.Context) error {
 	// -1 id means no rows in the table
 	if lastID == -1 || time.Since(*lastCreatedAt) > time.Minute {
 		log.Printf("last updated row was 1 hr ago or no rows exist, creating a new row")
-		err := h.logStore.InsertLogActivity(&loggedActivity)
+		err := h.store.InsertLogActivity(&loggedActivity)
 		if err != nil {
 			return err
 		}
 	} else {
 		// update the latest record in the table
-		err = h.logStore.UpdateLogActivityById(lastID, loggedActivity)
+		err = h.store.UpdateLogActivityById(lastID, loggedActivity)
 		if err != nil {
 			return err
 		}
@@ -56,7 +56,7 @@ func (h *Handler) getLogDetails(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusConflict, err.Error())
 	}
-	logs, err := h.logStore.GetLogActivtyPerWeek(toDate)
+	logs, err := h.store.GetLogActivtyPerWeek(toDate)
 
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err.Error())

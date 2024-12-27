@@ -12,9 +12,14 @@ import (
 
 var ErrNoEntityFound = errors.New("no entity found in the DB")
 var ErrEntityDeleted = errors.New("entity is deleted")
+
 var db *sql.DB
 
-func ConnectToDB() (*sql.DB, error) {
+type Store struct {
+	DB *sql.DB
+}
+
+func ConnectToDB() (*Store, error) {
 	userName := os.Getenv("DB_USER")
 	password := os.Getenv("DB_PASSWORD")
 	DBName := os.Getenv("DB_NAME")
@@ -37,7 +42,7 @@ func ConnectToDB() (*sql.DB, error) {
 
 	log.Println("Connected to DB sucessfully")
 
-	return db, nil
+	return &Store{DB: db}, nil
 }
 
 func Close() error {

@@ -1,4 +1,4 @@
-package logger
+package db
 
 import (
 	"database/sql"
@@ -8,17 +8,7 @@ import (
 	"time"
 )
 
-type LogStore struct {
-	DB *sql.DB
-}
-
-func NewLogStore(db *sql.DB) *LogStore {
-	return &LogStore{
-		DB: db,
-	}
-}
-
-func (s *LogStore) CreateLogActivityTable() error {
+func (s *Store) CreateLogActivityTable() error {
 	query := `
 		CREATE TABLE IF NOT EXISTS LOG_ACTIVITY(
 			ID SERIAL PRIMARY KEY,
@@ -41,7 +31,7 @@ func (s *LogStore) CreateLogActivityTable() error {
 	return nil
 }
 
-func (s *LogStore) InsertLogActivity(activity *models.LoggedActivity) error {
+func (s *Store) InsertLogActivity(activity *models.LoggedActivity) error {
 	query := `
 		INSERT INTO LOG_ACTIVITY (key,middle_clicks,right_clicks,left_clicks,extra_clicks,created_at,updated_at)
 		VALUES ($1,$2,$3,$4,$5,$6,$7)
@@ -60,7 +50,7 @@ func (s *LogStore) InsertLogActivity(activity *models.LoggedActivity) error {
 	return nil
 }
 
-func (s *LogStore) GetRecentUpdatedActivity() (*models.LoggedActivity, error) {
+func (s *Store) GetRecentUpdatedActivity() (*models.LoggedActivity, error) {
 	query := `
 		SELECT key, middle_clicks, right_clicks,left_clicks,extra_clicks FROM LOG_ACTIVITY
 		ORDER BY created_at DESC
@@ -83,7 +73,7 @@ func (s *LogStore) GetRecentUpdatedActivity() (*models.LoggedActivity, error) {
 	return &activity, nil
 }
 
-func (s *LogStore) GetLogActivityById(ID int) (*models.LoggedActivity, error) {
+func (s *Store) GetLogActivityById(ID int) (*models.LoggedActivity, error) {
 	query := `
 		select key, middle_clicks,left_clicks,right_clicks,extra_clicks, created_at,updated_at FROM LOG_ACTIVITY
 		WHERE id=$1
@@ -102,7 +92,7 @@ func (s *LogStore) GetLogActivityById(ID int) (*models.LoggedActivity, error) {
 	return &activity, nil
 }
 
-func (s *LogStore) UpdateLogActivityById(ID int, updatedActivity models.LoggedActivity) error {
+func (s *Store) UpdateLogActivityById(ID int, updatedActivity models.LoggedActivity) error {
 	activity, err := s.GetLogActivityById(ID)
 	if err != nil {
 		return err
@@ -130,7 +120,7 @@ func (s *LogStore) UpdateLogActivityById(ID int, updatedActivity models.LoggedAc
 
 }
 
-func (s *LogStore) GetRecentLogActivityCreatedAt() (int, *time.Time, error) {
+func (s *Store) GetRecentLogActivityCreatedAt() (int, *time.Time, error) {
 	query := `
 		SELECT id, created_at FROM LOG_ACTIVITY
 		ORDER BY created_at DESC
@@ -152,7 +142,7 @@ func (s *LogStore) GetRecentLogActivityCreatedAt() (int, *time.Time, error) {
 	return id, &createdAt, nil
 }
 
-func (s *LogStore) GetLogActivtyPerWeek(toDate time.Time) ([]models.LoggedActivity, error) {
+func (s *Store) GetLogActivtyPerWeek(toDate time.Time) ([]models.LoggedActivity, error) {
 	var logs []models.LoggedActivity
 	query := `
 		SELECT * FROM LOG_ACTIVITY 

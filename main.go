@@ -2,7 +2,7 @@ package main
 
 import (
 	"dhanushs3366/my-portfolio/handler"
-	"dhanushs3366/my-portfolio/initializers"
+	"dhanushs3366/my-portfolio/services/db"
 	"log"
 
 	"github.com/joho/godotenv"
@@ -14,11 +14,11 @@ func main() {
 		panic("Cant load env vars")
 	}
 
-	DB, err := initializers.Init()
+	store, err := db.Init()
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	h := handler.Init(DB)
+	h := handler.Init(store)
 
 	h.Run(8080)
 }
