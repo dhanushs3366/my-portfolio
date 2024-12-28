@@ -1,5 +1,6 @@
 package models
 
+// github repo is not saved in the db
 type GithubRepo struct {
 	ID          uint   `json:"id"`
 	Name        string `json:"name"`
@@ -11,7 +12,9 @@ type GithubRepo struct {
 	Stars       uint   `json:"stargazers_count"`
 	Watchers    uint   `json:"watchers_count"`
 }
+
 type ValidRepo struct {
-	Repo      GithubRepo `json:"repo"`
-	IsVisible bool       `json:"is_visible"`
+	ID        int  `json:"id"`
+	RepoID    uint `json:"repo_id"`
+	IsVisible bool `json:"is_visible"`
 }

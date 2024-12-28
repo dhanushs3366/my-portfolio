@@ -35,9 +35,12 @@ func Init(store *db.Store) *Handler {
 		AllowCredentials: true,
 	}))
 
+	// groups
 	adminRoutes := h.router.Group("/admins")
 	apiRoutes := h.router.Group("/api")
+	repoRoutes := h.router.Group("/repos")
 
+	// middleware
 	adminRoutes.Use(services.ValidateJWT)
 	apiRoutes.Use(services.ValidateLoggerToken)
 
@@ -49,12 +52,17 @@ func Init(store *db.Store) *Handler {
 	h.router.GET("/log-details", h.getLogDetails)
 	h.router.GET("/blogs", h.getBlogs)
 	h.router.GET("/blogs/:ID", h.getBlog)
-	h.router.GET("/repos", h.fetchGitRepos)
 
 	h.router.POST("/login", h.login)
 
 	// api
 	apiRoutes.POST("/log-details", h.postLogDetails)
+
+	// repos
+	repoRoutes.GET("", h.fetchGitRepos)
+	repoRoutes.GET("/valid", h.getValidRepos)
+	repoRoutes.PATCH("/:repoID", h.updateRepo)
+	repoRoutes.GET("/sync", h.syncRepos)
 
 	// admin
 	adminRoutes.GET("/hello", func(c echo.Context) error {

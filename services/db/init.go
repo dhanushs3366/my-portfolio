@@ -24,6 +24,12 @@ func (s *Store) sync() error {
 	}
 	log.Println("log activity table created succesfully")
 
+	err = s.createReposTable()
+	if err != nil {
+		log.Println("couldnt create repos table")
+		return err
+	}
+	log.Println("repo table created sucessfully")
 	return nil
 }
 

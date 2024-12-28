@@ -11,7 +11,7 @@ import (
 // github token expires so i will just hardcode my github username
 func FetchGitRepos() ([]models.GithubRepo, error) {
 	username := os.Getenv("GITHUB_USERNAME")
-
+	log.Println(username, "brooo")
 	repos, err := api.FetchReposByUserName(username)
 
 	if err != nil {
